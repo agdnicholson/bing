@@ -79,29 +79,45 @@ class Image extends Bing
 
     public function postProcessSingleImage($raw_image, $delimiter = "·")
     {
-        $raw_image["filetype"] = trim(
-            @explode($delimiter, $raw_image["size"])[1]
-        );
-        $raw_image["filetype"] =
-            $raw_image["filetype"] == "jpeg" ? "jpg" : $raw_image["filetype"];
-        $raw_image["filetype"] =
-            $raw_image["filetype"] == "animatedgif"
-                ? "gif"
-                : $raw_image["filetype"];
+       $raw_image["filetype"] = trim(
+           @explode($delimiter, $raw_image["size"])[1]
+       );
+       $raw_image["filetype"] =
+           $raw_image["filetype"] == "jpeg" ? "jpg" : $raw_image["filetype"];
+       $raw_image["filetype"] =
+           $raw_image["filetype"] == "animatedgif"
+               ? "gif"
+               : $raw_image["filetype"];
 
-        $raw_image["width"] = explode(
-            " x ",
-            @explode($delimiter, $raw_image["size"])[0]
-        )[0];
-        $raw_image["height"] = explode(
-            " x ",
-            @explode($delimiter, $raw_image["size"])[0]
-        )[1];
-        $raw_image["domain"] = parse_url($raw_image["link"], PHP_URL_HOST);
+       $imageSizeSection = @explode($delimiter, $raw_image["size"])[0];
+       $imageSizeSection = trim(str_replace(' ', '', $imageSizeSection));
 
-        return $raw_image;
+       if (!is_array($imageSizeSection) && strstr($imageSizeSection, 'x')) {
+           $raw_image["width"] = explode(
+                "x",
+               $imageSizeSection
+           )[0];
+           $raw_image["height"] = explode(
+               "x",
+               $imageSizeSection
+           )[1];
+       } elseif(!is_array($imageSizeSection) && strstr($imageSizeSection, '*')) {
+           $raw_image["width"] = explode(
+               "*",
+               $imageSizeSection
+           )[0];
+           $raw_image["height"] = explode(
+               "*",
+               $imageSizeSection
+           )[1];
+       } else {
+           $raw_image["width"] = 800;
+           $raw_image["height"] = 600;
+       }
+       $raw_image["domain"] = parse_url($raw_image["link"], PHP_URL_HOST);
+       return $raw_image;
     }
-
+    
     public function getImages()
     {
         return $this->images;
